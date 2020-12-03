@@ -1,10 +1,10 @@
 %{
+
 #include<stdio.h>
 #include<string.h>
 
 extern int yylex();
 extern char* yytext;
-
 void yyerror(char *s);
 
 void imprimeErro(int linha);
@@ -12,6 +12,7 @@ void imprimeCursor (int coluna);
 
 extern int lines;
 extern int chars;
+
 %}
 
 %token VOID
@@ -86,44 +87,34 @@ extern int chars;
 
 programa: programa_aux programa EOF_ {printf("SUCCESSFUL COMPILATION."); return 0;}
         | programa_aux EOF_ {printf("SUCCESSFUL COMPILATION."); return 0;};
-;
 
 programa_aux: declaracoes {}
-        | funcao {}
-;
+        | funcao {};
 
 declaracoes: NUMBER_SIGN DEFINE IDENTIFIER expressao {}
             | dec_variaveis {}
-            | dec_prototipos {}
-;
+            | dec_prototipos {};
 
-dec_variaveis: tipo dec_variaveis_aux SEMICOLON {}
-;
+dec_variaveis: tipo dec_variaveis_aux SEMICOLON {};
 
 dec_variaveis_aux: asterisco IDENTIFIER dec_variaveis_aux2 ASSIGN expressao_at dec_variaveis_aux3 {}
-                | asterisco IDENTIFIER dec_variaveis_aux2 dec_variaveis_aux3 {}
-;
+                | asterisco IDENTIFIER dec_variaveis_aux2 dec_variaveis_aux3 {};
 
 asterisco: MULTIPLY asterisco {}
         | {};
 
 dec_variaveis_aux2: L_SQUARE_BRACKET expressao R_SQUARE_BRACKET dec_variaveis_aux2 {}
-                | {}
-;
+                | {};
 
 dec_variaveis_aux3: COMMA dec_variaveis_aux {}
-                | {}
-;
+                | {};
 
-dec_prototipos: tipo asterisco IDENTIFIER parametros SEMICOLON {}
-;
+dec_prototipos: tipo asterisco IDENTIFIER parametros SEMICOLON {};
 
-funcao: tipo asterisco IDENTIFIER parametros L_CURLY_BRACKET funcao_aux comandos R_CURLY_BRACKET {}
-;
+funcao: tipo asterisco IDENTIFIER parametros L_CURLY_BRACKET funcao_aux comandos R_CURLY_BRACKET {};
 
 funcao_aux: dec_variaveis funcao_aux {}
-        | {}
-;
+        | {};
 
 parametros: L_PAREN parametros_aux R_PAREN {};
 
@@ -287,7 +278,6 @@ void yyerror(char *s){
                 printf("error:syntax:%d:%d: expected declaration or statement at end of input\n", lines, chars);
         }
         else{
-                int i;
                 int column = chars - strlen(yytext);
                 printf("error:syntax:%d:%d: %s\n", lines, column, yytext);
                 imprimeErro(lines);
@@ -296,29 +286,27 @@ void yyerror(char *s){
         }
 }
 
-int main (int argc, char **argv){
-        yyparse();
-}
-
 void imprimeErro(int linha){
         int i=1;
-	char c;
+	char lido;
+
+        
 	fseek(stdin, 0, SEEK_SET);
 
 	while(i < linha){
-		c = fgetc(stdin);
-		if(c == '\n'){
+		lido = fgetc(stdin);
+		if(lido == 10){
                         i++;
                 }
-		if(c == EOF){
+		if(lido == EOF){
                         break;
                 }
 	}
 
-	c = fgetc(stdin);
-	while(c!='\n' && c!=EOF){
-		printf("%c", c);
-		c = fgetc(stdin);
+	lido = fgetc(stdin);
+	while(lido != 10 && lido != EOF){
+		printf("%c", lido);
+		lido = fgetc(stdin);
 	}
 }
 
@@ -332,4 +320,6 @@ void imprimeCursor (int coluna){
 	printf("^");
 }
 
-
+int main (int argc, char **argv){
+        yyparse();
+}
