@@ -15,6 +15,8 @@ int colunaComment;
 int i;
 char lido;
 
+int fileno(FILE *stream);
+
 %}
 
 %x comment
