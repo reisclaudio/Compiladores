@@ -4,10 +4,12 @@
 %{
 
 #include<stdbool.h>
+#include<ast.h>
 #include<sintatico.tab.h>
 
 int chars = 1;
 int lines = 1;
+int fileno(FILE *stream);
 
 %}
 
@@ -25,20 +27,33 @@ int lines = 1;
 "("     {return L_PAREN;}
 ")"     {return R_PAREN;}
 ";"     {return SEMICOLON;}
+":"     {return COLON;}
 "sen"   {return SENO;}
 "cos"   {return COSSENO;}
 "tan"   {return TANGENTE;}
 "abs"   {return ABS;}
-[0-9]+"."[0-9]+     {yylval.real = atof(yytext); return NUM_REAL;}
-[0-9]+              {yylval.integer = atoi(yytext); return NUM_INT;}
-"x"     {return VARIAVEL;}
-"\n"    {yy_flush_buffer(YY_CURRENT_BUFFER); return EOL;}
-<<EOF>> {return EOF_;}
 
-"about"     {return ABOUT;}
-"quit"      {return QUIT;}
-([a-z]|[A-Z])* {printf("palavrinha ae ne meu (%s)\n", yytext); yy_flush_buffer(YY_CURRENT_BUFFER); return ERROR_LEXICAL;}
-. {printf("Simbolo Invalido -> %s\n", yytext); yy_flush_buffer(YY_CURRENT_BUFFER); return ERROR_LEXICAL;}
+
+"about"             {return ABOUT;}
+"show settings"     {return SHOW_SETTINGS;}
+"reset settings"    {return RESET_SETTINGS;}
+"set h_view"        {return SET_HVIEW;}
+"set v_view"        {return SET_VVIEW;}
+"set axis on"       {return SET_AXIS_ON;}
+"set axis off"      {return SET_AXIS_OFF;}
+"set integral_steps"    {return SET_INTEGRAL_STEPS;}
+"quit"              {return QUIT;}
+ 
+
+(""|-)[0-9]+"."[0-9]+     {yylval.real = atof(yytext); return NUM_REAL;}
+(""|-)[0-9]+              {yylval.integer = atoi(yytext); return NUM_INT;}
+"x"                       {return VARIAVEL;}
+"\n"                      {yy_flush_buffer(YY_CURRENT_BUFFER); return EOL;}
+
+
+<<EOF>> {return EOF_;}
+([a-z]|[A-Z])*          {printf("palavrinha ae ne meu (%s)\n", yytext); yy_flush_buffer(YY_CURRENT_BUFFER); return ERROR_LEXICAL;}
+.                       {printf("Simbolo Invalido -> %s\n", yytext); yy_flush_buffer(YY_CURRENT_BUFFER); return ERROR_LEXICAL;}
 %%
 
 void limparBuffer(){

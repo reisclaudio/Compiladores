@@ -3,15 +3,15 @@ BISON=bison
 CC=gcc
 FLAGS=-std=c99
 
-PROGRAMA = t2
+T2 = dcmat
 LEXICO = lexico.l
 SINTATICO = sintatico.y
 
-$(PROGRAMA): $(LEXICO) $(SINTATICO) 
+$(T2): $(LEXICO) $(SINTATICO) 
 	$(BISON) -d $(SINTATICO)
 	$(FLEX) $(LEXICO)
 	$(CC) -c *.c -I. $(FLAGS)
-	$(CC) *.o -o $(PROGRAMA) $(FLAGS)
+	$(CC) *.o -o $(T2) $(FLAGS)
 
 clean:
 	rm -f *.yy.c
@@ -21,3 +21,4 @@ clean:
 	rm -f *.exe
 	rm -f sintatico
 	rm -f lexico
+	rm -f dcmat

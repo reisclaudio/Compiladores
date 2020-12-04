@@ -3,15 +3,15 @@ BISON=bison
 CC=gcc
 FLAGS=-std=c99
 
-PROGRAMA = sintatico
+ANALISADOR = sintatico
 LEXICO = lexico.l
 SINTATICO = sintatico.y
 
-$(PROGRAMA): $(LEXICO) $(SINTATICO) 
+$(ANALISADOR): $(LEXICO) $(SINTATICO) 
 	$(BISON) -d $(SINTATICO)
 	$(FLEX) $(LEXICO)
 	$(CC) -c *.c -I. $(FLAGS)
-	$(CC) *.o -o $(PROGRAMA) $(FLAGS)
+	$(CC) *.o -o $(ANALISADOR) $(FLAGS)
 
 clean:
 	rm -f *.yy.c
