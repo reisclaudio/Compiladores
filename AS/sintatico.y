@@ -2,6 +2,9 @@
 
 #include<stdio.h>
 #include<string.h>
+#include<ast.h>
+#include<tabela.h>
+#include<erro.h>
 
 extern int yylex();
 extern char* yytext;
@@ -13,7 +16,21 @@ void imprimeCursor (int coluna);
 extern int lines;
 extern int chars;
 
+int define_line;
+
+Programa *programa = NULL;
+Tabela *tabela = NULL;
+
+
 %}
+
+%union{
+	
+	Node *ast;
+        Variavel *var;
+        Function *fun;
+
+}
 
 %token VOID
 %token INT
@@ -81,19 +98,45 @@ extern int chars;
 %token UNTERMINATED_COMMENT
 %token ERROR_LEXICAL
 
-%start programa
+%type <ast> tipo
+%type <fun> programa_aux
+
+
+%start start
+
 
 %%
+
+start : s {
+		//Print-Debug
+		//printfProgram(program, table);
+		testeSemantico(programa, tabela);
+		printfError();
+		
+		}
+		
+	
+;
+
+s: programa;
 
 programa: programa_aux programa EOF_ {printf("SUCCESSFUL COMPILATION."); return 0;}
         | programa_aux EOF_ {printf("SUCCESSFUL COMPILATION."); return 0;};
 
 programa_aux: declaracoes {}
-        | funcao {};
+        | funcao {
+              addProgram(programa, $1);  
+        };
 
-declaracoes: NUMBER_SIGN DEFINE IDENTIFIER expressao {}
-            | dec_variaveis {}
-            | dec_prototipos {};
+declaracoes: NUMBER_SIGN DEFINE IDENTIFIER expressao {
+        addTableVariable(tabela, createVariable(ID_CONS_DEFINE, NULL, $3, NULL, $4, define_line, chars, yytext));
+}
+            | dec_variaveis {
+                    addTableVariable(tabela, $1);
+            }
+            | dec_prototipos {
+                    addTableVariable(tabela, $1);
+            };
 
 dec_variaveis: tipo dec_variaveis_aux SEMICOLON {};
 
@@ -124,9 +167,15 @@ parametros_aux: tipo asterisco IDENTIFIER dec_variaveis_aux2 parametros_aux2 {}
 parametros_aux2: COMMA parametros_aux
         | {};
 
-tipo: INT {}
-        | CHAR {}
-        | VOID {};
+tipo: INT {
+        $$ = createNode(INT, 0, NULL, lines + 1, chars, yytext);
+      }
+      | CHAR {
+        $$ = createNode(CHAR, 0, NULL, lines + 1, chars, yytext); 
+      }
+      | VOID {
+        $$ = createNode(VOID, 0, NULL, lines + 1, chars, yytext);
+      };
 
 bloco: L_CURLY_BRACKET comandos R_CURLY_BRACKET {};
 

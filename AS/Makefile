@@ -3,14 +3,14 @@ BISON=bison
 CC=gcc
 FLAGS=-std=c99
 
-ANALISADOR = sintatico
+ANALISADOR = semantico
 LEXICO = lexico.l
 SINTATICO = sintatico.y
 
 $(ANALISADOR): $(LEXICO) $(SINTATICO) 
 	$(BISON) -d $(SINTATICO)
 	$(FLEX) $(LEXICO)
-	$(CC) -c *.c -I. $(FLAGS)
+	$(CC) -c *.c -I.
 	$(CC) *.o -o $(ANALISADOR) $(FLAGS)
 
 clean:

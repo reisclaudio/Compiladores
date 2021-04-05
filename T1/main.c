@@ -6,11 +6,14 @@
 
 int main (){
     file = stdin;
+    int o;
 
     do{
         tokenAux = getToken(file);
-        S();
-        //printf("%s\n", getNomeToken(tokenAux));
+
+        if(S()){
+            printf("CADEIA ACEITA\n");
+        }
     }
     while (tokenAux ==WHITESPACE);
 

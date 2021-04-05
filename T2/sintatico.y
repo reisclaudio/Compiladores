@@ -6,32 +6,36 @@
 #include<stdlib.h>
 #include<ast.h>
 
+// Funcoes do lexico
 extern int yylex();
 extern char* yytext;
 void yyerror(char *s);
 extern void limparBuffer();
 
+// Variaveis principais
 TreeNode* AST = NULL;
-
 int consoleExpressao;
 bool quitou = false;
 
+// Variaveis auxiliares
 float aux_h_view_lo;
 float aux_h_view_hi;
 float aux_v_view_lo;
 float aux_v_view_hi;
 int aux_integral_steps;
+int limite1, limite2;
 
 
 /*
-about --> 1
-show_settings --> 2
-reset_settings --> 3
-set_hview --> 4
-set_vview --> 5
-set_axis_on --> 6
-set_axis_off --> 7
-set_integral_steps --> 8
+        about --> 1
+        show_settings --> 2
+        reset_settings --> 3
+        set_hview --> 4
+        set_vview --> 5
+        set_axis_on --> 6
+        set_axis_off --> 7
+        set_integral_steps --> 8
+        integrate --> 9
 */
 
 %}
@@ -47,11 +51,12 @@ set_integral_steps --> 8
 %token MULTIPLY
 %token DIV
 %token POW
-%token MOD
+%token REMAINDER
 %token L_PAREN
 %token R_PAREN
 %token SEMICOLON
 %token COLON
+%token COMMA
 %token SENO
 %token COSSENO
 %token TANGENTE
@@ -69,6 +74,7 @@ set_integral_steps --> 8
 %token SET_AXIS_ON
 %token SET_AXIS_OFF
 %token SET_INTEGRAL_STEPS
+%token INTEGRATE
 %token QUIT
 %token ERROR_LEXICAL
 
@@ -84,10 +90,8 @@ set_integral_steps --> 8
 %type <ast> funcao
 %type <ast> funcao1
 %type <ast> funcao2
-%type <ast> funcao3
-%type <ast> funcao4
-%type <ast> funcao5
-%type <integer> VARIAVEL
+%type <integer> integrate1
+%type <integer> integrate2
 
 %start inicio
 
@@ -103,14 +107,15 @@ inicio: console EOL {consoleExpressao = $1; return 0;};
                            else{
                                    printf("AST is NULL\n");
                            }
-                           printf("\n\n>");
-                           limparBuffer();
+                           printf("\n\n"); 
+                           return 0;
                      };
 
 funcao: funcao1         {$$ = $1;}
         | funcao PLUS funcao1 {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
                                 aux->node_type = PLUS;
                                 aux->value = 0;
+                                aux->valueReal = 0.0;
                                 aux->left = $1;
                                 aux->right = $3;
                                 $$ = aux;
@@ -118,6 +123,7 @@ funcao: funcao1         {$$ = $1;}
         | funcao MINUS funcao1 {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
                                 aux->node_type = MINUS;
                                 aux->value = 0;
+                                aux->valueReal = 0.0;
                                 aux->left = $1;
                                 aux->right = $3;
                                 $$ = aux;
@@ -127,6 +133,7 @@ funcao1: funcao2        {$$ = $1;}
         | funcao1 MULTIPLY funcao2 {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
                                     aux->node_type = MULTIPLY;
                                     aux->value = 0;
+                                    aux->valueReal = 0.0;
                                     aux->left = $1;
                                     aux->right = $3;
                                     $$ = aux;
@@ -134,28 +141,61 @@ funcao1: funcao2        {$$ = $1;}
         | funcao1 DIV funcao2 {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
                                 aux->node_type = DIV;
                                 aux->value = 0;
+                                aux->valueReal = 0.0;
                                 aux->left = $1;
                                 aux->right = $3;
                                 $$ = aux;
                                }
-        | funcao1 MOD funcao2 {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
-                                aux->node_type = MOD;
+        | funcao1 REMAINDER funcao2 {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
+                                aux->node_type = REMAINDER;
                                 aux->value = 0;
+                                aux->valueReal = 0.0;
+                                aux->left = $1;
+                                aux->right = $3;
+                                $$ = aux;
+                                }
+        | funcao1 POW funcao2 {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
+                                aux->node_type = POW;
+                                aux->value = 0;
+                                aux->valueReal = 0.0;
                                 aux->left = $1;
                                 aux->right = $3;
                                 $$ = aux;
                                };
         
-funcao2: funcao3 {$$ = $1;}
-        | funcao2 POW funcao3 {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
-                                aux->node_type = POW;
-                                aux->value = 0;
-                                aux->left = $1;
-                                aux->right = $3;
-                                $$ = aux;
-                               };
 
-funcao3: funcao4 {$$ = $1;}
+funcao2: L_PAREN funcao R_PAREN { $$ = $2; }
+
+        | NUM_INT {
+                                TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+                                aux->node_type = NUM_INT;
+                                aux->value = $1;
+                                aux->valueReal = 0.0;
+                                aux->left = NULL;
+                                aux->right = NULL;
+                                $$ = (TreeNode*) aux;
+        }
+
+        | NUM_REAL {
+                                TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+                                aux->node_type = NUM_REAL;
+                                aux->value = 0;
+                                aux->valueReal = $1;
+                                aux->left = NULL;
+                                aux->right = NULL;
+                                $$ = (TreeNode*) aux;
+        }
+
+        | VARIAVEL {
+                                TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+                                aux->node_type = VARIAVEL;
+                                aux->value = 0;
+                                aux->valueReal = 0.0;
+                                aux->left = NULL;
+                                aux->right = NULL;
+                                $$ = (TreeNode*) aux;
+        }
+
         | SENO L_PAREN funcao R_PAREN {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
                                 aux->node_type = SENO;
                                 aux->value = 0;
@@ -173,6 +213,7 @@ funcao3: funcao4 {$$ = $1;}
         | TANGENTE L_PAREN funcao R_PAREN {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
                                 aux->node_type = TANGENTE;
                                 aux->value = 0;
+                                aux->valueReal = 0.0;
                                 aux->left = $3;
                                 aux->right = NULL;
                                 $$ = aux;
@@ -180,35 +221,12 @@ funcao3: funcao4 {$$ = $1;}
         | ABS L_PAREN funcao R_PAREN {TreeNode* aux = (TreeNode*) malloc(sizeof(struct node));
                                 aux->node_type = ABS;
                                 aux->value = 0;
+                                aux->valueReal = 0.0;
                                 aux->left = $3;
                                 aux->right = NULL;
                                 $$ = aux;
                                };
         
-funcao4: funcao5  {$$ = $1;}
-        | L_PAREN funcao R_PAREN {$$ = $2;};
-
-funcao5: NUM_REAL { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node)); 
-                   aux->node_type = NUM_REAL;
-                   aux->value = $1;
-                   aux->left = NULL;
-                   aux->right = NULL;
-                   $$ = (TreeNode*) aux;
-                  }
-        | NUM_INT { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node)); 
-                   aux->node_type = NUM_INT;
-                   aux->value = $1;
-                   aux->left = NULL;
-                   aux->right = NULL;
-                   $$ = (TreeNode*) aux;
-                  }
-        | VARIAVEL { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node)); 
-                   aux->node_type = VARIAVEL;
-                   aux->value = $1;
-                   aux->left = NULL;
-                   aux->right = NULL;
-                   $$ = (TreeNode*) aux;
-                    };
 
 console: ABOUT SEMICOLON {$$ = 1;}
         | SHOW_SETTINGS SEMICOLON {$$ = 2;}
@@ -218,6 +236,7 @@ console: ABOUT SEMICOLON {$$ = 1;}
         | SET_AXIS_ON SEMICOLON {$$ = 6;}
         | SET_AXIS_OFF SEMICOLON {$$ = 7;}
         | SET_INTEGRAL_STEPS i_steps SEMICOLON {$$ = 8; aux_integral_steps = $2;}
+        | INTEGRATE L_PAREN integrate1 COLON integrate2 COMMA funcao R_PAREN SEMICOLON {$$ = 9; limite1 = $3; limite2 = $5; TreeNode* aux = $7;}
         | QUIT {quitou = true; exit (1);}
         | EOF_ {return 666;}
         |  {$$ = 666;};
@@ -232,14 +251,18 @@ v_view2: NUM_REAL {$$ = $1;};
 
 i_steps: NUM_INT {$$ = $1;};
 
+integrate1: NUM_INT {$$ = $1;};
+
+integrate2: NUM_INT {$$ = $1;};
+
 %%
 
 void yyerror(char *s){
         if (strcmp(yytext, "") != 0){
                 printf("Erro de Sintaxe: [%s]\n", yytext);
         }
-        limparBuffer();
         consoleExpressao = 666;
+        limparBuffer();
 }
 
 float h_view_lo = -6.500000;
@@ -330,11 +353,22 @@ void set_integral_steps(){
         }
 }
 
-int main (int argc, char **argv){
-        while (!quitou){
-                printf(">");
-                if (!yyparse()){
+void set_integral(){
+        if (limite1 > limite2){
+                printf("\nERROR: lower limit must be smaller than upper limit\n\n");
+        }
+        else if (limite1 == limite2){
+                printf("\nO.O\n\n");
+        }
+}
 
+int main (int argc, char **argv){
+        printf(">");
+        while (1){
+                yyparse();
+                
+                if (quitou){
+                        exit(0);
                 }
 
                 if (consoleExpressao == 1){
@@ -362,8 +396,14 @@ int main (int argc, char **argv){
                 else if (consoleExpressao == 8){
                         set_integral_steps();
                 }
+                else if (consoleExpressao == 9){
+                        set_integral();
+                }
                 else if (consoleExpressao == 666){
 
                 }
+		
+		limparBuffer();
+                printf(">");
         }
 }

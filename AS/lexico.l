@@ -4,6 +4,7 @@
 %{
 
 #include<stdbool.h>
+#include <ast.h>
 #include<sintatico.tab.h>
 
 int chars = 1;
@@ -14,6 +15,7 @@ int colunaComment;
 
 int i;
 char lido;
+extern int define_line;
 
 int fileno(FILE *stream);
 
@@ -78,7 +80,7 @@ int fileno(FILE *stream);
 "->"                    {chars += strlen(yytext); return POINTER;}
 "printf"                {chars += strlen(yytext); return PRINTF;}
 "scanf"                 {chars += strlen(yytext); return SCANF;}
-"define"                {chars += strlen(yytext); return DEFINE;}
+"define"                {chars += strlen(yytext); define_line = lines+1;return DEFINE;}
 "exit"                  {chars += strlen(yytext); return EXIT;}
 
 ([a-z]|"_"|[A-Z])([a-z]|"_"|[A-Z]|[0-9])*                {chars += strlen(yytext); return IDENTIFIER;}

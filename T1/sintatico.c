@@ -4,6 +4,8 @@
 
 int tokenAux = ERRO;
 
+int o;
+
 void eat (int token){
     if ((tokenAux == token)) {
         advance();
@@ -52,11 +54,11 @@ void error(char* func){
     //S();
 }
 
-void S(){
+bool S(){
     switch(tokenAux){
-        case IF: eat(IF); E(); eat(THEN); S(); eat(ELSE); S(); break;
-        case BEGIN: eat(BEGIN); S(); L(); break;
-        case PRINT: eat(PRINT); E(); printf("aceitou hehhe\n"); break;
+        case IF: eat(IF); E(); eat(THEN); S(); eat(ELSE); S(); return true; break;
+        case BEGIN: eat(BEGIN); S(); L(); return true;break;
+        case PRINT: eat(PRINT); E(); return true; break;
         default: error("s");
     }
 }

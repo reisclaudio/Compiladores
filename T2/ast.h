@@ -6,6 +6,7 @@ struct node
 {
 	int node_type;
 	int value;
+	float valueReal;
 	TreeNode* left;
 	TreeNode* right;
 };

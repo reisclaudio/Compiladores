@@ -13,8 +13,6 @@ int fileno(FILE *stream);
 
 %}
 
-%x comment
-
 %%
 
 [\t\f\r ]*      {}
@@ -23,11 +21,12 @@ int fileno(FILE *stream);
 "*"     {return MULTIPLY;}
 "/"     {return DIV;}
 "^"     {return POW;}
-"%"     {return MOD;}
+"%"     {return REMAINDER;}
 "("     {return L_PAREN;}
 ")"     {return R_PAREN;}
 ";"     {return SEMICOLON;}
 ":"     {return COLON;}
+","     {return COMMA;}
 "sen"   {return SENO;}
 "cos"   {return COSSENO;}
 "tan"   {return TANGENTE;}
@@ -42,20 +41,21 @@ int fileno(FILE *stream);
 "set axis on"       {return SET_AXIS_ON;}
 "set axis off"      {return SET_AXIS_OFF;}
 "set integral_steps"    {return SET_INTEGRAL_STEPS;}
+"integrate"         {return INTEGRATE;}
 "quit"              {return QUIT;}
  
 
 (""|-)[0-9]+"."[0-9]+     {yylval.real = atof(yytext); return NUM_REAL;}
 (""|-)[0-9]+              {yylval.integer = atoi(yytext); return NUM_INT;}
-"x"                       {return VARIAVEL;}
+(""|-)"x"                       {return VARIAVEL;}
 "\n"                      {yy_flush_buffer(YY_CURRENT_BUFFER); return EOL;}
 
 
 <<EOF>> {return EOF_;}
-([a-z]|[A-Z])*          {printf("palavrinha ae ne meu (%s)\n", yytext); yy_flush_buffer(YY_CURRENT_BUFFER); return ERROR_LEXICAL;}
-.                       {printf("Simbolo Invalido -> %s\n", yytext); yy_flush_buffer(YY_CURRENT_BUFFER); return ERROR_LEXICAL;}
+.                       {printf("\nSimbolo Invalido -> %s\n\n", yytext); yy_flush_buffer(YY_CURRENT_BUFFER); return ERROR_LEXICAL;}
 %%
 
 void limparBuffer(){
     yy_flush_buffer(YY_CURRENT_BUFFER);
 }
+

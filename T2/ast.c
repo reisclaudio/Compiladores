@@ -18,13 +18,13 @@ void RPN_Walk(TreeNode* aux)
 			case MULTIPLY:{printf("* ");};break;
 			case DIV:{printf("/ ");};break;
             case POW:{printf("^ ");};break;
-            case MOD:{printf("%% ");};break;
+            case REMAINDER:{printf("%% ");};break;
             case SENO:{printf("SEN ");};break;
             case COSSENO:{printf("COS ");};break;
             case TANGENTE:{printf("TAN ");};break;
             case ABS:{printf("ABS ");};break;
 			case NUM_INT:{printf("%d ",aux->value);};break;
-            case NUM_REAL:{printf("%d ",aux->value);};break;
+            case NUM_REAL:{printf("%f ",aux->valueReal);};break;
             case VARIAVEL:{printf("x ");};break;
 		}
         limparBuffer();
